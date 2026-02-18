@@ -1,0 +1,43 @@
+# --- .NET (C# / Visual Studio) ---
+bin/
+obj/
+TestResults/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.vs/
+.idea/
+.vscode/
+appsettings.Development.json
+ClientApp/dist/
+ClientApp/build/
+
+# --- React / Node.js ---
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp/
+.pnp.js
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# --- Builds e Outputs ---
+build/
+dist/
+out/
+publish/
+
+# --- Sistema Operacional ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Outros ---
+*.log
+*.tmp
+*.bak
