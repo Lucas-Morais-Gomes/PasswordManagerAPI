@@ -1,19 +1,97 @@
 body {
   background-color: #1a1a1a;
   color: #ffffff;
-  font-family: Arial, sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin: 0;
   display: flex;
   justify-content: center;
   min-height: 100vh;
 }
 
-.container { width: 100%; max-width: 800px; padding: 20px; }
-.card { background: #2a2a2a; padding: 20px; border-radius: 8px; margin-bottom: 10px; }
-input { width: 100%; padding: 10px; margin: 5px 0; background: #333; border: 1px solid #444; color: white; border-radius: 4px; }
-button { padding: 10px 20px; cursor: pointer; background: #646cff; color: white; border: none; border-radius: 4px; font-weight: bold; }
+.container {
+  width: 100%;
+  max-width: 800px;
+  padding: 20px;
+  box-sizing: border-box; 
+}
+
+.card {
+  background: #2a2a2a;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+input {
+  width: 100%;
+  padding: 12px; 
+  margin: 5px 0;
+  background: #333;
+  border: 1px solid #444;
+  color: white;
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-size: 16px; 
+}
+
+button {
+  padding: 12px 20px;
+  cursor: pointer;
+  background: #646cff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 14px;
+  transition: background 0.2s;
+  white-space: nowrap; 
+}
+
 button:hover { background: #535bf2; }
 button.secondary { background: #444; }
+button.secondary:hover { background: #555; }
+
 .flex { display: flex; gap: 10px; align-items: center; }
-.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-a { color: #646cff; text-decoration: none; }
+.flex-col { display: flex; flex-direction: column; gap: 10px; }
+.justify-between { justify-content: space-between; }
+.items-center { align-items: center; }
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 600px) {
+  
+  .form-row {
+    flex-direction: column;
+    align-items: stretch; 
+  }
+
+  .list-item {
+    flex-direction: column;
+    align-items: flex-start !important; 
+    gap: 15px;
+  }
+
+  .list-item-info {
+    width: 100%;
+    border-bottom: 1px solid #444; 
+    padding-bottom: 10px;
+  }
+
+  .list-item-actions {
+    width: 100%;
+    display: flex;
+    justify-content: space-between; 
+  }
+  
+  .list-item-actions button {
+    flex: 1; 
+    display: flex;
+    justify-content: center;
+  }
+}

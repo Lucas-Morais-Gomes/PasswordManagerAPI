@@ -34,7 +34,7 @@ export default function Dashboard() {
 
             const response = await api.get(`/vault/decrypt/${id}`);
             const realPassword = response.data.password;
-        
+
             setNewItem({ 
                 siteName: item.siteName, 
                 username: item.username, 
@@ -42,6 +42,7 @@ export default function Dashboard() {
             });
             
             setEditingId(id);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         } catch (error) {
             alert('Erro ao carregar dados para edição.');
         }
@@ -56,12 +57,10 @@ export default function Dashboard() {
         e.preventDefault();
         try {
             if (editingId) {
-            
                 await api.put(`/vault/${editingId}`, newItem);
                 alert('Senha atualizada com sucesso!');
                 setEditingId(null);
             } else {
-            
                 await api.post('/vault', newItem);
                 alert('Senha salva com segurança!');
             }
@@ -87,7 +86,6 @@ export default function Dashboard() {
     const revelarSenha = async (id: number) => {
         try {
             const response = await api.get(`/vault/decrypt/${id}`);
-        
             alert(`Senha do site: ${response.data.password}`);
         } catch (error) {
             alert('Erro ao descriptografar.');
@@ -98,8 +96,7 @@ export default function Dashboard() {
         <div className="container">
             <header className="header">
                 <h1>🔐 Meu Cofre</h1>
-                <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
-                    <span>Usuário Logado</span>
+                <div className="flex">
                     <button onClick={logout} className="secondary">Sair</button>
                 </div>
             </header>
@@ -108,7 +105,7 @@ export default function Dashboard() {
                 <h3>{editingId ? '✏️ Editando Senha' : '➕ Adicionar Nova Senha'}</h3>
                 
                 <form onSubmit={salvarSenha}>
-                    <div className="flex">
+                    <div className="flex form-row">
                         <input 
                             placeholder="Site (ex: Netflix)" 
                             value={newItem.siteName} 
@@ -130,8 +127,8 @@ export default function Dashboard() {
                         />
                     </div>
                     
-                    <div style={{ marginTop: '10px', display: 'flex', gap: '10px' }}>
-                        <button type="submit">
+                    <div style={{ marginTop: '15px', display: 'flex', gap: '10px' }}>
+                        <button type="submit" style={{ flex: 1 }}>
                             {editingId ? 'Salvar Alterações' : 'Salvar Criptografado'}
                         </button>
                         
@@ -146,12 +143,14 @@ export default function Dashboard() {
 
             <div style={{ marginTop: '20px' }}>
                 {passwords.map(item => (
-                    <div key={item.id} className="card flex" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div>
-                            <strong>{item.siteName}</strong>
-                            <div style={{ color: '#aaa', fontSize: '0.9em' }}>{item.username}</div>
+                    <div key={item.id} className="card flex list-item" style={{ justifyContent: 'space-between' }}>
+                        
+                        <div className="list-item-info">
+                            <strong style={{ fontSize: '1.1em' }}>{item.siteName}</strong>
+                            <div style={{ color: '#aaa', fontSize: '0.9em', marginTop: '4px' }}>{item.username}</div>
                         </div>
-                        <div className="flex" style={{ gap: '8px' }}>
+
+                        <div className="flex list-item-actions" style={{ gap: '8px' }}>
                             <button onClick={() => revelarSenha(item.id)} title="Ver Senha">👁</button>
                             <button onClick={() => iniciarEdicao(item.id)} title="Editar">✏️</button>
                             <button onClick={() => deletarSenha(item.id)} className="secondary" title="Excluir">🗑</button>
