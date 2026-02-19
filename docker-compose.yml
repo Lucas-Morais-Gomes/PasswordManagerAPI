@@ -1,5 +1,5 @@
 services:
-  # 1. Banco de Dados (Não muda nada)
+  # 1. Banco de Dados (PostgreSQL)
   db:
     image: postgres:15-alpine
     container_name: password_manager_db
@@ -12,44 +12,41 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
-  # 2. Backend API (Modo Watch)
+  # 2. Backend API (.NET)
   backend:
     build:
       context: ./backend
-      target: build # <--- Pulo do gato: Usa a imagem com SDK, não a final leve
+      target: build
     container_name: password_manager_api
     depends_on:
       - db
-    # Comando mágico que assiste os arquivos e reinicia sozinho
     command: dotnet watch run --urls "http://*:8080"
     environment:
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=passwordvault;Username=admin;Password=adminpassword
-      - EncryptionKey=ChaveAES256Com32BytesExatos123456
-      - DOTNET_USE_POLLING_FILE_WATCHER=1 # Ajuda o Docker no Windows a ver mudanças
-      # Tem que ser GIGANTE para o SHA512 aceitar
-      - Jwt__Key=EstaEUmaChaveMuitoLongaParaGarantirQueOSHA512NaoReclameDeFaltaDeBitsSegurancaMaxima12345678901234567890
+      - EncryptionSettings__Key=12345678901234567890123456789012
+      - DOTNET_USE_POLLING_FILE_WATCHER=1
+      - JwtSettings__Key=EstaEUmaChaveMuitoLongaParaGarantirQueOSHA512NaoReclameDeFaltaDeBitsSegurancaMaxima12345678901234567890
     ports:
       - "5000:8080"
     volumes:
-      - ./backend:/app # <--- Espelha sua pasta local para dentro do container
-      - /app/obj # <--- Evita conflitos de compilação Windows/Linux
-      - /app/bin # <--- Evita conflitos de compilação Windows/Linux
+      - ./backend:/app
+      - /app/obj
+      - /app/bin
 
-  # 3. Frontend (Modo Vite Dev)
+  # 3. Frontend (React + Vite)
   frontend:
     build:
       context: ./frontend
-      target: build # <--- Usa a imagem Node, ignora o Nginx
+      target: build 
     container_name: password_manager_ui
     depends_on:
       - backend
-    # Roda o servidor de desenvolvimento do Vite em vez do Nginx
     command: npm run dev -- --host --port 3000
     ports:
       - "3000:3000"
     volumes:
-      - ./frontend:/app # <--- Espelha sua pasta local
-      - /app/node_modules # <--- MUITO IMPORTANTE: Mantém os módulos do Linux, ignora o Windows
+      - ./frontend:/app 
+      - /app/node_modules 
 
 volumes:
   pgdata:

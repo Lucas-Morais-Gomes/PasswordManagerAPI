@@ -11,7 +11,7 @@ namespace PasswordManagerAPI.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize] // Exige Login (JWT) para tudo aqui
+[Authorize] 
 public class VaultController : ControllerBase
 {
     private readonly AppDbContext _context;
@@ -23,7 +23,6 @@ public class VaultController : ControllerBase
         _encryptionService = encryptionService;
     }
 
-    // Pega o ID do usuário do Token JWT
     private int GetUserId() => int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
     [HttpGet]
@@ -81,5 +80,24 @@ public class VaultController : ControllerBase
         await _context.SaveChangesAsync();
         
         return NoContent();
+    }
+
+    [HttpPut("{id}")]
+    public async Task<ActionResult> UpdatePassword(int id, CreateVaultItemDto request)
+    {
+        var userId = GetUserId();
+        
+        var item = await _context.VaultItems.FirstOrDefaultAsync(v => v.Id == id && v.UserId == userId);
+
+        if (item == null) return NotFound("Item não encontrado ou acesso negado.");
+        
+        item.SiteName = request.SiteName;
+        item.Username = request.Username;
+        
+        item.EncryptedPassword = _encryptionService.Encrypt(request.Password);
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new { message = "Senha atualizada com sucesso!" });
     }
 }
