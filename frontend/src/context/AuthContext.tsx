@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect } from 'react';
+import { createContext, useState } from 'react'; // Removi o useEffect pois não precisamos mais dele aqui
 import type { ReactNode } from 'react'; 
 
 interface AuthContextType {
@@ -10,12 +10,9 @@ interface AuthContextType {
 export const AuthContext = createContext({} as AuthContextType);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (token) setIsAuthenticated(true);
-    }, []);
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+        return !!localStorage.getItem('token');
+    });
 
     const login = (token: string) => {
         localStorage.setItem('token', token);
