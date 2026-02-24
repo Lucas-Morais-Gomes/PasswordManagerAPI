@@ -25,7 +25,7 @@ public class AuthController : ControllerBase
     public async Task<ActionResult<TokenResponseDto>> Register(RegisterDto request)
     {
         if (await _context.Users.AnyAsync(u => u.Email == request.Email))
-            return BadRequest("Email já cadastrado.");
+            return BadRequest("Email ou senha já estão em uso.");
 
         // Hash da Senha Mestra (BCrypt)
         string passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
@@ -42,10 +42,10 @@ public class AuthController : ControllerBase
     public async Task<ActionResult<TokenResponseDto>> Login(LoginDto request)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
-        if (user == null) return Unauthorized("Usuário não encontrado.");
+        if (user == null) return Unauthorized("Senha ou usuário estão incorretos.");
 
         if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
-            return Unauthorized("Senha incorreta.");
+            return Unauthorized("Senha ou usuário estão incorretos.");
 
         var token = _tokenService.CreateToken(user);
         return Ok(new TokenResponseDto(token, user.Email));

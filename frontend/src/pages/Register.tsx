@@ -13,8 +13,13 @@ export default function Register() {
             await api.post('/auth/register', { email, password });
             alert('Conta criada! Faça login.');
             navigate('/login');
-        } catch (error) {
-            alert('Erro ao criar conta.');
+        } catch (error: any) {
+
+            if (error.response && error.response.data) {
+                alert(error.response.data); 
+            } else {
+                alert('Erro ao criar conta. Tente novamente mais tarde.');
+            }
         }
     };
 
