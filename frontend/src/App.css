@@ -49,6 +49,7 @@ button {
 }
 
 button:hover { background: #535bf2; }
+button:disabled { background: #666; cursor: not-allowed; opacity: 0.7; }
 button.secondary { background: #444; }
 button.secondary:hover { background: #555; }
 
@@ -62,13 +63,81 @@ button.secondary:hover { background: #555; }
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  gap: 15px;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px; 
+  box-sizing: border-box;
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 400px; 
+  text-align: center;
+  color: #333;
+  box-sizing: border-box;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+}
+
+.drag-area {
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 40px 20px;
+  margin: 20px 0;
+  cursor: pointer;
+  background-color: #f9f9f9;
+  transition: all 0.3s;
+  box-sizing: border-box;
+}
+
+.drag-area.active {
+  border-color: #007bff;
+  background-color: #e9f5ff;
+}
+
+.modal-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.modal-actions button {
+  flex: 1;
 }
 
 @media (max-width: 600px) {
   
+  .header {
+    flex-direction: column;
+    align-items: stretch; 
+  }
+
+  .header button {
+    width: 100%; 
+  }
+
   .form-row {
     flex-direction: column;
     align-items: stretch; 
+  }
+
+  .form-row button {
+    width: 100%;
   }
 
   .list-item {
@@ -87,11 +156,20 @@ button.secondary:hover { background: #555; }
     width: 100%;
     display: flex;
     justify-content: space-between; 
+    gap: 10px;
   }
   
   .list-item-actions button {
     flex: 1; 
     display: flex;
     justify-content: center;
+  }
+
+  .modal-content {
+    padding: 20px;
+  }
+
+  .drag-area {
+    padding: 30px 10px;
   }
 }

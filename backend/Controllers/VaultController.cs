@@ -100,4 +100,67 @@ public class VaultController : ControllerBase
 
         return Ok(new { message = "Senha atualizada com sucesso!" });
     }
+
+    [HttpPost("import")]
+    public async Task<ActionResult> ImportPasswords(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest("Nenhum arquivo foi enviado ou o arquivo está vazio.");
+
+        if (!file.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+            return BadRequest("O arquivo deve ser um formato .csv válido.");
+
+        var userId = GetUserId();
+        int importedCount = 0;
+
+        using (var stream = new StreamReader(file.OpenReadStream()))
+        {
+            var headerLine = await stream.ReadLineAsync();
+            if (string.IsNullOrWhiteSpace(headerLine)) 
+                return BadRequest("O arquivo CSV está vazio ou inválido.");
+
+            var headers = headerLine.Split(',').Select(h => h.Trim().ToLower()).ToList();
+            var nameIndex = headers.IndexOf("name");
+            var usernameIndex = headers.IndexOf("username");
+            var passwordIndex = headers.IndexOf("password");
+
+            if (nameIndex == -1 || usernameIndex == -1 || passwordIndex == -1)
+                return BadRequest("O CSV deve conter obrigatoriamente as colunas: 'name', 'username' e 'password'.");
+
+            while (!stream.EndOfStream)
+            {
+                var line = await stream.ReadLineAsync();
+                if (string.IsNullOrWhiteSpace(line)) continue;
+
+                var values = line.Split(',');
+
+                if (values.Length <= Math.Max(nameIndex, Math.Max(usernameIndex, passwordIndex))) 
+                    continue;
+
+                var siteName = values[nameIndex].Trim();
+                var username = values[usernameIndex].Trim();
+                var password = values[passwordIndex].Trim();
+
+                if (string.IsNullOrWhiteSpace(siteName) || string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(username)) 
+                    continue;
+
+                var encryptedPassword = _encryptionService.Encrypt(password);
+
+                var newItem = new VaultItem
+                {
+                    UserId = userId,
+                    SiteName = siteName,
+                    Username = username,
+                    EncryptedPassword = encryptedPassword
+                };
+
+                _context.VaultItems.Add(newItem);
+                importedCount++;
+            }
+        }
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new { message = $"{importedCount} senhas foram importadas com sucesso!" });
+    }
 }

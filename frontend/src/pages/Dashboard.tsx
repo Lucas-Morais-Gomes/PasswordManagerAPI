@@ -1,4 +1,5 @@
-import { useEffect, useState, useContext } from 'react';
+import { useEffect, useState, useContext, useRef } from 'react';
+import type { DragEvent, ChangeEvent } from 'react';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 
@@ -13,10 +14,73 @@ export default function Dashboard() {
     const [newItem, setNewItem] = useState({ siteName: '', username: '', password: '' });
     const [editingId, setEditingId] = useState<number | null>(null);
     const { logout } = useContext(AuthContext);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [dragActive, setDragActive] = useState(false);
+    const [file, setFile] = useState<File | null>(null);
+    const [uploading, setUploading] = useState(false);
+    const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         carregarSenhas();
     }, []);
+
+    const handleDrag = (e: DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.type === "dragenter" || e.type === "dragover") {
+            setDragActive(true);
+        } else if (e.type === "dragleave") {
+            setDragActive(false);
+        }
+    };
+
+    const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragActive(false);
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            validateAndSetFile(e.dataTransfer.files[0]);
+        }
+    };
+
+    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+        e.preventDefault();
+        if (e.target.files && e.target.files[0]) {
+            validateAndSetFile(e.target.files[0]);
+        }
+    };
+
+    const validateAndSetFile = (selectedFile: File) => {
+        if (selectedFile.name.endsWith('.csv')) {
+            setFile(selectedFile);
+        } else {
+            alert("Por favor, selecione apenas arquivos .csv");
+        }
+    };
+
+    const handleUpload = async () => {
+        if (!file) return;
+        setUploading(true);
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+            const response = await api.post('/vault/import', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            alert(response.data.message);
+            setFile(null);
+            setIsModalOpen(false);
+            carregarSenhas();
+        } catch (error: any) {
+            alert(error.response?.data || "Erro ao importar arquivo");
+        } finally {
+            setUploading(false);
+        }
+    };
 
     const carregarSenhas = async () => {
         try {
@@ -96,6 +160,9 @@ export default function Dashboard() {
         <div className="container">
             <header className="header">
                 <h1>🔐 Meu Cofre</h1>
+                <button onClick={() => setIsModalOpen(true)} style={{ marginBottom: '20px' }}>
+                    📁 Importar CSV
+                </button>
                 <div className="flex">
                     <button onClick={logout} className="secondary">Sair</button>
                 </div>
@@ -140,6 +207,46 @@ export default function Dashboard() {
                     </div>
                 </form>
             </div>
+
+            {isModalOpen && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <h3>Importar Senhas</h3>
+                        <p>Arraste seu arquivo .csv ou clique para selecionar.</p>
+
+                        <div 
+                            className={`drag-area ${dragActive ? 'active' : ''}`}
+                            onDragEnter={handleDrag}
+                            onDragLeave={handleDrag}
+                            onDragOver={handleDrag}
+                            onDrop={handleDrop}
+                            onClick={() => inputRef.current?.click()}
+                        >
+                            <input 
+                                ref={inputRef}
+                                type="file" 
+                                accept=".csv" 
+                                onChange={handleChange} 
+                                style={{ display: 'none' }}
+                            />
+                            {file ? (
+                                <p>✅ Arquivo selecionado: <br/><strong>{file.name}</strong></p>
+                            ) : (
+                                <p>Arraste e solte o arquivo aqui<br/>ou clique para buscar</p>
+                            )}
+                        </div>
+
+                        <div className="modal-actions">
+                            <button className="secondary" onClick={() => { setIsModalOpen(false); setFile(null); }} disabled={uploading}>
+                                Cancelar
+                            </button>
+                            <button onClick={handleUpload} disabled={!file || uploading}>
+                                {uploading ? 'Importando...' : 'Importar'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div style={{ marginTop: '20px' }}>
                 {passwords.map(item => (
