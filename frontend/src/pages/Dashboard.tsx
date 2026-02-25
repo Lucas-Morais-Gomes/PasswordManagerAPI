@@ -87,8 +87,13 @@ export default function Dashboard() {
         try {
             const response = await api.get('/vault');
             setPasswords(response.data);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Erro ao buscar', error);
+
+            if (error.response && error.response.status === 401) {
+                alert("Sua sessão expirou. Por favor, faça login novamente.");
+                logout();
+            }
         }
     };
 
