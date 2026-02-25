@@ -19,6 +19,7 @@ export default function Dashboard() {
     const [file, setFile] = useState<File | null>(null);
     const [uploading, setUploading] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         carregarSenhas();
@@ -172,6 +173,10 @@ export default function Dashboard() {
         }
     };
 
+    const senhasFiltradas = passwords.filter(item => 
+        item.siteName.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     return (
         <div className="container">
             <header className="header">
@@ -269,22 +274,37 @@ export default function Dashboard() {
                 </div>
             )}
 
-            <div style={{ marginTop: '20px' }}>
-                {passwords.map(item => (
-                    <div key={item.id} className="card flex list-item" style={{ justifyContent: 'space-between' }}>
-                        
-                        <div className="list-item-info">
-                            <strong style={{ fontSize: '1.1em' }}>{item.siteName}</strong>
-                            <div style={{ color: '#aaa', fontSize: '0.9em', marginTop: '4px' }}>{item.username}</div>
-                        </div>
+            <div style={{ marginTop: '30px', marginBottom: '15px' }}>
+                <input 
+                    type="text" 
+                    placeholder="🔍 Pesquisar por nome do site..." 
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    style={{ borderRadius: '20px', paddingLeft: '20px' }} 
+                />
+            </div>
 
-                        <div className="flex list-item-actions" style={{ gap: '8px' }}>
-                            <button onClick={() => revelarSenha(item.id)} title="Ver Senha">👁</button>
-                            <button onClick={() => iniciarEdicao(item.id)} title="Editar">✏️</button>
-                            <button onClick={() => deletarSenha(item.id)} className="secondary" title="Excluir">🗑</button>
+            <div>
+                {senhasFiltradas.length > 0 ? (
+                    senhasFiltradas.map(item => (
+                        <div key={item.id} className="card flex list-item" style={{ justifyContent: 'space-between' }}>
+                            <div className="list-item-info">
+                                <strong style={{ fontSize: '1.1em' }}>{item.siteName}</strong>
+                                <div style={{ color: '#aaa', fontSize: '0.9em', marginTop: '4px' }}>{item.username}</div>
+                            </div>
+
+                            <div className="flex list-item-actions" style={{ gap: '8px' }}>
+                                <button onClick={() => revelarSenha(item.id)} title="Ver Senha">👁</button>
+                                <button onClick={() => iniciarEdicao(item.id)} title="Editar">✏️</button>
+                                <button onClick={() => deletarSenha(item.id)} className="secondary" title="Excluir">🗑</button>
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    ))
+                ) : (
+                    <p style={{ textAlign: 'center', color: '#888', marginTop: '20px' }}>
+                        Nenhuma senha encontrada.
+                    </p>
+                )}
             </div>
         </div>
     );
