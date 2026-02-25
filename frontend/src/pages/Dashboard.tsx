@@ -156,6 +156,22 @@ export default function Dashboard() {
         }
     };
 
+    const deletarTodasAsSenhas = async () => {
+        const primeiraConfirmacao = confirm("⚠️ ATENÇÃO: Tem certeza que deseja excluir TODAS as suas senhas?");
+        if (!primeiraConfirmacao) return;
+
+        const segundaConfirmacao = confirm("Esta ação é IRREVERSÍVEL! Deseja realmente esvaziar seu cofre?");
+        if (!segundaConfirmacao) return;
+
+        try {
+            const response = await api.delete('/vault/all');
+            alert(response.data.message || 'Cofre esvaziado com sucesso.');
+            carregarSenhas();
+        } catch (error: any) {
+            alert(error.response?.data || 'Erro ao deletar todas as senhas.');
+        }
+    };
+
     return (
         <div className="container">
             <header className="header">
@@ -166,6 +182,11 @@ export default function Dashboard() {
                 <div className="flex">
                     <button onClick={logout} className="secondary">Sair</button>
                 </div>
+                {passwords.length > 0 && (
+                        <button onClick={deletarTodasAsSenhas} style={{ backgroundColor: '#dc3545' }}>
+                            🚨 Deletar Tudo
+                        </button>
+                    )}
             </header>
 
             <div className="card">

@@ -82,6 +82,21 @@ public class VaultController : ControllerBase
         return NoContent();
     }
 
+    [HttpDelete("all")]
+    public async Task<ActionResult> DeleteAllPasswords()
+    {
+        var userId = GetUserId();
+        
+        var deletedCount = await _context.VaultItems
+            .Where(v => v.UserId == userId)
+            .ExecuteDeleteAsync();
+
+        if (deletedCount == 0)
+            return BadRequest("Seu cofre já está vazio.");
+            
+        return Ok(new { message = "Todas as senhas foram excluídas com sucesso." });
+    }
+
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdatePassword(int id, CreateVaultItemDto request)
     {
