@@ -56,7 +56,10 @@ export default function Dashboard() {
         if (selectedFile.name.endsWith('.csv')) {
             setFile(selectedFile);
         } else {
-            alert("Por favor, selecione apenas arquivos .csv");
+            mySwal.fire({
+                text: 'Por favor, selecione apenas arquivos .csv',
+                icon: 'info',
+            });
         }
     };
 
@@ -73,12 +76,20 @@ export default function Dashboard() {
                     'Content-Type': 'multipart/form-data'
                 }
             });
-            alert(response.data.message);
+            mySwal.fire({
+                title: 'Sucesso!',
+                text: response.data.message,
+                icon: 'success',
+            });
             setFile(null);
             setIsModalOpen(false);
             carregarSenhas();
         } catch (error: any) {
-            alert(error.response?.data || "Erro ao importar arquivo");
+            mySwal.fire({
+                title: 'Erro!',
+                text: error.response?.data || "Erro ao importar arquivo",
+                icon: 'error',
+            });
         } finally {
             setUploading(false);
         }
@@ -120,7 +131,11 @@ export default function Dashboard() {
             setEditingId(id);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } catch (error) {
-            alert('Erro ao carregar dados para edição.');
+            mySwal.fire({
+                title: 'Erro!',
+                text: 'Erro ao carregar dados para edição.',
+                icon: 'error',
+            });
         }
     };
 
@@ -134,18 +149,34 @@ export default function Dashboard() {
         try {
             if (editingId) {
                 await api.put(`/vault/${editingId}`, newItem);
-                alert('Senha atualizada com sucesso!');
+                mySwal.fire({
+                    title: 'Sucesso!',
+                    text: 'Senha atualizada com sucesso!',
+                    icon: 'success',
+                });
                 setEditingId(null);
             } else {
                 await api.post('/vault', newItem);
-                alert('Senha salva com segurança!');
+                mySwal.fire({
+                    title: 'Sucesso!',
+                    text: 'Senha salva com segurança!',
+                    icon: 'success',
+                });
             }
             
             setNewItem({ siteName: '', username: '', password: '' });
             carregarSenhas();
-            alert('Senha salva com segurança!');
+            mySwal.fire({
+                title: 'Sucesso!',
+                text: 'Senha salva com segurança!',
+                icon: 'success',
+            });
         } catch (error) {
-            alert('Erro ao salvar.');
+            mySwal.fire({
+                title: 'Erro!',
+                text: 'Erro ao salvar.',
+                icon: 'error',
+            });
         }
     };
 
