@@ -2,6 +2,7 @@ import { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
 import { Link, useNavigate } from 'react-router-dom';
+import { mySwal } from '../utils/swal';
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -15,8 +16,8 @@ export default function Login() {
             const response = await api.post('/auth/login', { email, password });
             login(response.data.token);
             navigate('/');
-        } catch (error) {
-            alert('Falha no login. Verifique seus dados.');
+        } catch (error: any) {
+            mySwal.fire('Erro!', error.response?.data || 'Erro no login', 'error');
         }
     };
 

@@ -2,6 +2,7 @@ import { useEffect, useState, useContext, useRef } from 'react';
 import type { DragEvent, ChangeEvent } from 'react';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
+import { mySwal } from '../utils/swal';
 
 interface VaultItem {
     id: number;
@@ -91,9 +92,13 @@ export default function Dashboard() {
             console.error('Erro ao buscar', error);
 
             if (error.response && error.response.status === 401) {
-                alert("Sua sessão expirou. Por favor, faça login novamente.");
-                logout();
-            }
+                mySwal.fire({
+                    title: 'Sessão Expirada',
+                    text: 'Por favor, faça login novamente.',
+                    icon: 'warning',
+                }).then(() => {
+                    logout();
+                });
         }
     };
 
@@ -144,37 +149,58 @@ export default function Dashboard() {
     };
 
     const deletarSenha = async (id: number) => {
-        if (!confirm("Tem certeza que deseja excluir?")) return;
-        try {
-            await api.delete(`/vault/${id}`);
-            carregarSenhas();
-        } catch (error) {
-            alert('Erro ao deletar.');
+        const result = await mySwal.fire({
+            title: 'Tem certeza?',
+            text: "Você não poderá reverter isso!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sim, excluir!',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                await api.delete(`/vault/${id}`);
+                carregarSenhas();
+                mySwal.fire('Excluído!', 'Sua senha foi deletada.', 'success');
+            } catch (error) {
+                mySwal.fire('Erro!', 'Erro ao deletar.', 'error');
+            }
         }
     };
 
     const revelarSenha = async (id: number) => {
         try {
             const response = await api.get(`/vault/decrypt/${id}`);
-            alert(`Senha do site: ${response.data.password}`);
+            mySwal.fire({
+                title: 'Sua Senha',
+                text: response.data.password,
+                icon: 'info',
+            });
         } catch (error) {
-            alert('Erro ao descriptografar.');
+            mySwal.fire('Erro!', 'Erro ao descriptografar.', 'error');
         }
     };
 
     const deletarTodasAsSenhas = async () => {
-        const primeiraConfirmacao = confirm("⚠️ ATENÇÃO: Tem certeza que deseja excluir TODAS as suas senhas?");
-        if (!primeiraConfirmacao) return;
+        const result = await mySwal.fire({
+            title: '⚠️ ATENÇÃO EXTREMA',
+            text: "Deseja excluir TODAS as suas senhas? Esta ação é IRREVERSÍVEL!",
+            icon: 'error',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545', // Confirmação em vermelho
+            confirmButtonText: 'SIM, DELETAR TUDO',
+            cancelButtonText: 'Cancelar'
+        });
 
-        const segundaConfirmacao = confirm("Esta ação é IRREVERSÍVEL! Deseja realmente esvaziar seu cofre?");
-        if (!segundaConfirmacao) return;
-
-        try {
-            const response = await api.delete('/vault/all');
-            alert(response.data.message || 'Cofre esvaziado com sucesso.');
-            carregarSenhas();
-        } catch (error: any) {
-            alert(error.response?.data || 'Erro ao deletar todas as senhas.');
+        if (result.isConfirmed) {
+            try {
+                const response = await api.delete('/vault/all');
+                mySwal.fire('Sucesso!', response.data.message || 'Cofre esvaziado.', 'success');
+                carregarSenhas();
+            } catch (error: any) {
+                mySwal.fire('Erro!', error.response?.data || 'Erro ao deletar tudo.', 'error');
+            }
         }
     };
 

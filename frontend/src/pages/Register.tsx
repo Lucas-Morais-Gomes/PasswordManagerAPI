@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import api from '../services/api';
 import { Link, useNavigate } from 'react-router-dom';
+import { mySwal } from '../utils/swal';
 
 export default function Register() {
     const [email, setEmail] = useState('');
@@ -11,14 +12,14 @@ export default function Register() {
         e.preventDefault();
         try {
             await api.post('/auth/register', { email, password });
-            alert('Conta criada! Faça login.');
+            await mySwal.fire('Sucesso!', 'Conta criada! Faça login.', 'success'); // O await faz ele esperar você clicar em OK
             navigate('/login');
         } catch (error: any) {
 
             if (error.response && error.response.data) {
-                alert(error.response.data); 
+                mySwal.fire('Erro!', error.response.data, 'error');
             } else {
-                alert('Erro ao criar conta. Tente novamente mais tarde.');
+                mySwal.fire('Oops...', 'Erro ao criar conta. Tente novamente.', 'error');
             }
         }
     };
