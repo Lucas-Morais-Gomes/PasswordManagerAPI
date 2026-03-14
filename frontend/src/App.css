@@ -10,7 +10,7 @@ body {
 
 .container {
   width: 100%;
-  max-width: 800px;
+  max-width: 70em;
   padding: 20px;
   box-sizing: border-box; 
 }

@@ -1,17 +1,22 @@
 import { useEffect, useState, useContext, useRef } from 'react';
 import type { DragEvent, ChangeEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
+import { VaultContext } from '../context/VaultContext';
 import { mySwal } from '../utils/swal';
 
-interface VaultItem {
-    id: number;
-    siteName: string;
-    username: string;
-}
-
 export default function Dashboard() {
-    const [passwords, setPasswords] = useState<VaultItem[]>([]);
+    const { 
+        passwords, 
+        fetchPasswords, 
+        addPassword, 
+        updatePassword, 
+        deletePassword, 
+        deleteAllPasswords,
+        loading 
+    } = useContext(VaultContext);
+    
     const [newItem, setNewItem] = useState({ siteName: '', username: '', password: '' });
     const [editingId, setEditingId] = useState<number | null>(null);
     const { logout } = useContext(AuthContext);
@@ -21,9 +26,10 @@ export default function Dashboard() {
     const [uploading, setUploading] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const navigate = useNavigate();
 
     useEffect(() => {
-        carregarSenhas();
+        fetchPasswords(); // Só vai buscar se ainda não tiver os dados
     }, []);
 
     const handleDrag = (e: DragEvent<HTMLDivElement>) => {
@@ -71,19 +77,17 @@ export default function Dashboard() {
         formData.append("file", file);
 
         try {
-            const response = await api.post('/vault/import', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
+            await api.post('/vault/import', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
             });
             mySwal.fire({
                 title: 'Sucesso!',
-                text: response.data.message,
+                text: 'Senhas importadas com sucesso!',
                 icon: 'success',
             });
             setFile(null);
             setIsModalOpen(false);
-            carregarSenhas();
+            fetchPasswords(true); // Força refresh após importar
         } catch (error: any) {
             mySwal.fire({
                 title: 'Erro!',
@@ -92,25 +96,6 @@ export default function Dashboard() {
             });
         } finally {
             setUploading(false);
-        }
-    };
-
-    const carregarSenhas = async () => {
-        try {
-            const response = await api.get('/vault');
-            setPasswords(response.data);
-        } catch (error: any) {
-            console.error('Erro ao buscar', error);
-
-            if (error.response && error.response.status === 401) {
-                mySwal.fire({
-                    title: 'Sessão Expirada',
-                    text: 'Por favor, faça login novamente.',
-                    icon: 'warning',
-                }).then(() => {
-                    logout();
-                });
-            }
         }
     };
 
@@ -148,29 +133,22 @@ export default function Dashboard() {
         e.preventDefault();
         try {
             if (editingId) {
-                await api.put(`/vault/${editingId}`, newItem);
+                await updatePassword(editingId, newItem);
                 mySwal.fire({
                     title: 'Sucesso!',
-                    text: 'Senha atualizada com sucesso!',
+                    text: 'Senha atualizada!',
                     icon: 'success',
                 });
                 setEditingId(null);
             } else {
-                await api.post('/vault', newItem);
+                await addPassword(newItem);
                 mySwal.fire({
                     title: 'Sucesso!',
-                    text: 'Senha salva com segurança!',
+                    text: 'Senha salva!',
                     icon: 'success',
                 });
             }
-            
             setNewItem({ siteName: '', username: '', password: '' });
-            carregarSenhas();
-            mySwal.fire({
-                title: 'Sucesso!',
-                text: 'Senha salva com segurança!',
-                icon: 'success',
-            });
         } catch (error) {
             mySwal.fire({
                 title: 'Erro!',
@@ -180,7 +158,7 @@ export default function Dashboard() {
         }
     };
 
-    const deletarSenha = async (id: number) => {
+    const deletarSenhaClick = async (id: number) => {
         const result = await mySwal.fire({
             title: 'Tem certeza?',
             text: "Você não poderá reverter isso!",
@@ -192,8 +170,7 @@ export default function Dashboard() {
 
         if (result.isConfirmed) {
             try {
-                await api.delete(`/vault/${id}`);
-                carregarSenhas();
+                await deletePassword(id);
                 mySwal.fire('Excluído!', 'Sua senha foi deletada.', 'success');
             } catch (error) {
                 mySwal.fire('Erro!', 'Erro ao deletar.', 'error');
@@ -214,24 +191,23 @@ export default function Dashboard() {
         }
     };
 
-    const deletarTodasAsSenhas = async () => {
+    const deletarTodasAsSenhasClick = async () => {
         const result = await mySwal.fire({
             title: '⚠️ ATENÇÃO EXTREMA',
-            text: "Deseja excluir TODAS as suas senhas? Esta ação é IRREVERSÍVEL!",
+            text: "Deseja excluir TODAS as suas senhas? ("+passwords.length+" Senhas)",
             icon: 'error',
             showCancelButton: true,
-            confirmButtonColor: '#dc3545', // Confirmação em vermelho
+            confirmButtonColor: '#dc3545',
             confirmButtonText: 'SIM, DELETAR TUDO',
             cancelButtonText: 'Cancelar'
         });
 
         if (result.isConfirmed) {
             try {
-                const response = await api.delete('/vault/all');
-                mySwal.fire('Sucesso!', response.data.message || 'Cofre esvaziado.', 'success');
-                carregarSenhas();
+                await deleteAllPasswords();
+                mySwal.fire('Sucesso!', 'Cofre esvaziado.', 'success');
             } catch (error: any) {
-                mySwal.fire('Erro!', error.response?.data || 'Erro ao deletar tudo.', 'error');
+                mySwal.fire('Erro!', 'Erro ao deletar tudo.', 'error');
             }
         }
     };
@@ -244,17 +220,22 @@ export default function Dashboard() {
         <div className="container">
             <header className="header">
                 <h1>🔐 Meu Cofre</h1>
-                <button onClick={() => setIsModalOpen(true)} style={{ marginBottom: '20px' }}>
-                    📁 Importar CSV
-                </button>
-                <div className="flex">
-                    <button onClick={logout} className="secondary">Sair</button>
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                    <button onClick={() => setIsModalOpen(true)}>
+                        📁 Importar CSV
+                    </button>
+                    <button onClick={() => navigate('/generator')} className="secondary" style={{ backgroundColor: '#646cff', color: 'white' }}>
+                        🛠️ Gerador de Senhas
+                    </button>
                 </div>
                 {passwords.length > 0 && (
-                        <button onClick={deletarTodasAsSenhas} style={{ backgroundColor: '#dc3545' }}>
+                        <button onClick={deletarTodasAsSenhasClick} style={{ backgroundColor: '#dc3545' }}>
                             🚨 Deletar Tudo
                         </button>
                     )}
+                <div className="flex">
+                    <button onClick={logout} className="secondary">Sair</button>
+                </div>
             </header>
 
             <div className="card">
@@ -348,7 +329,9 @@ export default function Dashboard() {
             </div>
 
             <div>
-                {senhasFiltradas.length > 0 ? (
+                {loading && passwords.length === 0 ? (
+                    <p style={{ textAlign: 'center' }}>Carregando senhas...</p>
+                ) : senhasFiltradas.length > 0 ? (
                     senhasFiltradas.map(item => (
                         <div key={item.id} className="card flex list-item" style={{ justifyContent: 'space-between' }}>
                             <div className="list-item-info">
@@ -359,7 +342,7 @@ export default function Dashboard() {
                             <div className="flex list-item-actions" style={{ gap: '8px' }}>
                                 <button onClick={() => revelarSenha(item.id)} title="Ver Senha">👁</button>
                                 <button onClick={() => iniciarEdicao(item.id)} title="Editar">✏️</button>
-                                <button onClick={() => deletarSenha(item.id)} className="secondary" title="Excluir">🗑</button>
+                                <button onClick={() => deletarSenhaClick(item.id)} className="secondary" title="Excluir">🗑</button>
                             </div>
                         </div>
                     ))
