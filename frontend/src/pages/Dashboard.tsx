@@ -29,7 +29,7 @@ export default function Dashboard() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        fetchPasswords(); // Só vai buscar se ainda não tiver os dados
+        fetchPasswords(); 
     }, []);
 
     const handleDrag = (e: DragEvent<HTMLDivElement>) => {
@@ -87,7 +87,7 @@ export default function Dashboard() {
             });
             setFile(null);
             setIsModalOpen(false);
-            fetchPasswords(true); // Força refresh após importar
+            fetchPasswords(true);
         } catch (error: any) {
             mySwal.fire({
                 title: 'Erro!',
@@ -194,7 +194,7 @@ export default function Dashboard() {
     const deletarTodasAsSenhasClick = async () => {
         const result = await mySwal.fire({
             title: '⚠️ ATENÇÃO EXTREMA',
-            text: "Deseja excluir TODAS as suas senhas? ("+passwords.length+" Senhas)",
+            text: `Deseja excluir TODAS as suas senhas? (${passwords.length} Senhas)`,
             icon: 'error',
             showCancelButton: true,
             confirmButtonColor: '#dc3545',
@@ -217,45 +217,58 @@ export default function Dashboard() {
     );
 
     return (
-        <div className="container">
-            <header className="header">
-                <h1>🔐 Meu Cofre</h1>
-                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                    <button onClick={() => setIsModalOpen(true)}>
+        <div className="w-full max-w-6xl mx-auto px-4 py-8 flex flex-col gap-8">
+            <header className="flex flex-col md:flex-row justify-between items-center gap-6 glass-card p-6">
+                <div className="flex items-center gap-4">
+                    <h1>
+                        <span className="text-3xl">🔐</span>
+                    </h1>
+                    <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-brand-light to-white">
+                        Meu Cofre
+                    </h1>
+                </div>
+                
+                <div className="flex flex-wrap items-center justify-center gap-3">
+                    <button onClick={() => navigate('/generator')} className="btn-primary py-2 px-4 text-sm w-auto">
+                        🛠️ Gerar Senha
+                    </button>
+                    <button onClick={() => setIsModalOpen(true)} className="btn-secondary py-2 px-4 text-sm w-auto">
                         📁 Importar CSV
                     </button>
-                    <button onClick={() => navigate('/generator')} className="secondary" style={{ backgroundColor: '#646cff', color: 'white' }}>
-                        🛠️ Gerador de Senhas
-                    </button>
-                </div>
-                {passwords.length > 0 && (
-                        <button onClick={deletarTodasAsSenhasClick} style={{ backgroundColor: '#dc3545' }}>
+                    {passwords.length > 0 && (
+                        <button onClick={deletarTodasAsSenhasClick} className="btn-danger py-2 px-4 text-sm w-auto">
                             🚨 Deletar Tudo
                         </button>
                     )}
-                <div className="flex">
-                    <button onClick={logout} className="secondary">Sair</button>
+                    <button onClick={logout} className="btn-secondary py-2 px-4 text-sm w-auto ml-2 border-red-500/30 hover:bg-red-500/10 hover:text-red-400">
+                        Sair
+                    </button>
                 </div>
             </header>
 
-            <div className="card">
-                <h3>{editingId ? '✏️ Editando Senha' : '➕ Adicionar Nova Senha'}</h3>
+            <div className="glass-card">
+                <h3 className="text-xl font-semibold mb-4 text-brand-light flex items-center gap-2">
+                    {editingId ? '✏️ Editando Senha' : '➕ Adicionar Nova Senha'}
+                </h3>
                 
-                <form onSubmit={salvarSenha}>
-                    <div className="flex form-row">
+                <form onSubmit={salvarSenha} className="flex flex-col gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <input 
+                            className="glass-input mb-0"
                             placeholder="Site (ex: Netflix)" 
                             value={newItem.siteName} 
                             onChange={e => setNewItem({ ...newItem, siteName: e.target.value })} 
                             required 
                         />
                         <input 
+                            className="glass-input mb-0"
                             placeholder="Usuário/Email" 
                             value={newItem.username} 
                             onChange={e => setNewItem({ ...newItem, username: e.target.value })} 
                             required 
                         />
                         <input 
+                            className="glass-input mb-0"
                             type="password" 
                             placeholder="Senha" 
                             value={newItem.password} 
@@ -264,13 +277,13 @@ export default function Dashboard() {
                         />
                     </div>
                     
-                    <div style={{ marginTop: '15px', display: 'flex', gap: '10px' }}>
-                        <button type="submit" style={{ flex: 1 }}>
+                    <div className="flex flex-col md:flex-row gap-3 mt-2">
+                        <button type="submit" className="btn-primary md:w-auto md:flex-1">
                             {editingId ? 'Salvar Alterações' : 'Salvar Criptografado'}
                         </button>
                         
                         {editingId && (
-                            <button type="button" className="secondary" onClick={cancelarEdicao}>
+                            <button type="button" className="btn-secondary md:w-auto" onClick={cancelarEdicao}>
                                 Cancelar
                             </button>
                         )}
@@ -278,14 +291,62 @@ export default function Dashboard() {
                 </form>
             </div>
 
+            <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <span className="text-gray-400">🔍</span>
+                </div>
+                <input 
+                    type="text" 
+                    className="glass-input pl-11 rounded-full mb-0 bg-dark-card border-white/5"
+                    placeholder="Pesquisar por nome do site..." 
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {loading && passwords.length === 0 ? (
+                    <div className="col-span-full text-center py-10 text-gray-400 animate-pulse">
+                        Carregando senhas seguramente...
+                    </div>
+                ) : senhasFiltradas.length > 0 ? (
+                    senhasFiltradas.map(item => (
+                        <div key={item.id} className="glass-card p-5 flex flex-col justify-between group hover:border-brand-DEFAULT/40 transition-colors">
+                            <div className="mb-4">
+                                <strong className="text-lg text-white block mb-1 truncate" title={item.siteName}>{item.siteName}</strong>
+                                <div className="text-gray-400 text-sm truncate" title={item.username}>{item.username}</div>
+                            </div>
+
+                            <div className="flex justify-end gap-2 pt-4 border-t border-white/5">
+                                <button onClick={() => revelarSenha(item.id)} className="btn-icon text-blue-400 hover:bg-blue-500/20 hover:border-blue-500/30" title="Ver Senha">
+                                    👁️
+                                </button>
+                                <button onClick={() => iniciarEdicao(item.id)} className="btn-icon text-yellow-400 hover:bg-yellow-500/20 hover:border-yellow-500/30" title="Editar">
+                                    ✏️
+                                </button>
+                                <button onClick={() => deletarSenhaClick(item.id)} className="btn-icon text-red-400 hover:bg-red-500/20 hover:border-red-500/30" title="Excluir">
+                                    🗑️
+                                </button>
+                            </div>
+                        </div>
+                    ))
+                ) : (
+                    <div className="col-span-full glass-card py-12 text-center text-gray-400 flex flex-col items-center justify-center">
+                        <span className="text-4xl mb-3 opacity-50">📭</span>
+                        <p>Nenhuma senha encontrada no seu cofre.</p>
+                    </div>
+                )}
+            </div>
+
             {isModalOpen && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
-                        <h3>Importar Senhas</h3>
-                        <p>Arraste seu arquivo .csv ou clique para selecionar.</p>
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+                    <div className="glass-card w-full max-w-md shadow-2xl border-white/20">
+                        <h3 className="text-xl font-bold mb-2 text-white">Importar Senhas</h3>
+                        <p className="text-gray-400 text-sm mb-6">Arraste seu arquivo .csv ou clique para selecionar.</p>
 
                         <div 
-                            className={`drag-area ${dragActive ? 'active' : ''}`}
+                            className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-300
+                                ${dragActive ? 'border-brand-DEFAULT bg-brand-DEFAULT/10' : 'border-gray-600 bg-black/20 hover:border-gray-500'}`}
                             onDragEnter={handleDrag}
                             onDragLeave={handleDrag}
                             onDragOver={handleDrag}
@@ -297,61 +358,32 @@ export default function Dashboard() {
                                 type="file" 
                                 accept=".csv" 
                                 onChange={handleChange} 
-                                style={{ display: 'none' }}
+                                className="hidden"
                             />
                             {file ? (
-                                <p>✅ Arquivo selecionado: <br/><strong>{file.name}</strong></p>
+                                <div className="text-brand-light">
+                                    <span className="text-2xl block mb-2">✅</span>
+                                    <strong className="break-words">{file.name}</strong>
+                                </div>
                             ) : (
-                                <p>Arraste e solte o arquivo aqui<br/>ou clique para buscar</p>
+                                <div className="text-gray-400">
+                                    <span className="text-3xl block mb-2">📄</span>
+                                    <p>Arraste e solte o arquivo aqui<br/>ou clique para buscar</p>
+                                </div>
                             )}
                         </div>
 
-                        <div className="modal-actions">
-                            <button className="secondary" onClick={() => { setIsModalOpen(false); setFile(null); }} disabled={uploading}>
+                        <div className="flex gap-3 mt-6">
+                            <button className="btn-secondary flex-1" onClick={() => { setIsModalOpen(false); setFile(null); }} disabled={uploading}>
                                 Cancelar
                             </button>
-                            <button onClick={handleUpload} disabled={!file || uploading}>
+                            <button className="btn-primary flex-1" onClick={handleUpload} disabled={!file || uploading}>
                                 {uploading ? 'Importando...' : 'Importar'}
                             </button>
                         </div>
                     </div>
                 </div>
             )}
-
-            <div style={{ marginTop: '30px', marginBottom: '15px' }}>
-                <input 
-                    type="text" 
-                    placeholder="🔍 Pesquisar por nome do site..." 
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    style={{ borderRadius: '20px', paddingLeft: '20px' }} 
-                />
-            </div>
-
-            <div>
-                {loading && passwords.length === 0 ? (
-                    <p style={{ textAlign: 'center' }}>Carregando senhas...</p>
-                ) : senhasFiltradas.length > 0 ? (
-                    senhasFiltradas.map(item => (
-                        <div key={item.id} className="card flex list-item" style={{ justifyContent: 'space-between' }}>
-                            <div className="list-item-info">
-                                <strong style={{ fontSize: '1.1em' }}>{item.siteName}</strong>
-                                <div style={{ color: '#aaa', fontSize: '0.9em', marginTop: '4px' }}>{item.username}</div>
-                            </div>
-
-                            <div className="flex list-item-actions" style={{ gap: '8px' }}>
-                                <button onClick={() => revelarSenha(item.id)} title="Ver Senha">👁</button>
-                                <button onClick={() => iniciarEdicao(item.id)} title="Editar">✏️</button>
-                                <button onClick={() => deletarSenhaClick(item.id)} className="secondary" title="Excluir">🗑</button>
-                            </div>
-                        </div>
-                    ))
-                ) : (
-                    <p style={{ textAlign: 'center', color: '#888', marginTop: '20px' }}>
-                        Nenhuma senha encontrada.
-                    </p>
-                )}
-            </div>
         </div>
     );
 }

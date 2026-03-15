@@ -12,10 +12,9 @@ export default function Register() {
         e.preventDefault();
         try {
             await api.post('/auth/register', { email, password });
-            await mySwal.fire('Sucesso!', 'Conta criada! Faça login.', 'success'); // O await faz ele esperar você clicar em OK
+            await mySwal.fire('Sucesso!', 'Conta criada! Faça login.', 'success');
             navigate('/login');
         } catch (error: any) {
-
             if (error.response && error.response.data) {
                 mySwal.fire('Erro!', error.response.data, 'error');
             } else {
@@ -25,14 +24,39 @@ export default function Register() {
     };
 
     return (
-        <div className="container" style={{ maxWidth: '400px', marginTop: '50px' }}>
-            <h2>Criar Conta</h2>
-            <form onSubmit={handleRegister} className="card">
-                <input placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
-                <input type="password" placeholder="Senha Mestra" value={password} onChange={e => setPassword(e.target.value)} />
-                <button type="submit" style={{ width: '100%', marginTop: '10px' }}>Cadastrar</button>
+        <div className="w-full max-w-md mt-20 px-4">
+            <div className="text-center mb-8">
+                <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-brand-light to-brand-DEFAULT mb-2">
+                    Criar Conta
+                </h1>
+                <p className="text-gray-400">Seu novo cofre digital</p>
+            </div>
+
+            <form onSubmit={handleRegister} className="glass-card flex flex-col gap-2">
+                <input 
+                    type="email"
+                    className="glass-input"
+                    placeholder="E-mail" 
+                    value={email} 
+                    onChange={e => setEmail(e.target.value)} 
+                    required
+                />
+                <input 
+                    type="password" 
+                    className="glass-input"
+                    placeholder="Senha Mestra" 
+                    value={password} 
+                    onChange={e => setPassword(e.target.value)} 
+                    required
+                />
+                <button type="submit" className="btn-primary mt-4">
+                    Cadastrar
+                </button>
             </form>
-            <p>Já tem conta? <Link to="/login">Faça Login</Link></p>
+            
+            <p className="text-center mt-6 text-gray-400">
+                Já tem conta? <Link to="/login" className="text-brand-light hover:text-white transition-colors">Faça Login</Link>
+            </p>
         </div>
     );
 }

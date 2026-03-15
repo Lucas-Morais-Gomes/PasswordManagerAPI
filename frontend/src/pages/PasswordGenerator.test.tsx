@@ -57,7 +57,7 @@ describe('PasswordGenerator Page', () => {
 
     it('deve validar se site e usuário estão preenchidos ao salvar', () => {
         renderPage();
-        const saveBtn = screen.getByText('Guardar Senha Gerada');
+        const saveBtn = screen.getByText('Guardar Senha Atual');
         
         fireEvent.click(saveBtn);
         // O mockAddPassword não deve ser chamado se os campos estiverem vazios

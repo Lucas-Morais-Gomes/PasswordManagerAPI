@@ -1,175 +1,35 @@
-body {
-  background-color: #1a1a1a;
-  color: #ffffff;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  margin: 0;
-  display: flex;
-  justify-content: center;
-  min-height: 100vh;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-dark-bg text-white font-sans antialiased m-0 min-h-screen bg-radial-gradient bg-fixed bg-no-repeat bg-cover flex justify-center items-start;
+  }
 }
 
-.container {
-  width: 100%;
-  max-width: 70em;
-  padding: 20px;
-  box-sizing: border-box; 
-}
-
-.card {
-  background: #2a2a2a;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 15px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-}
-
-input {
-  width: 100%;
-  padding: 12px; 
-  margin: 5px 0;
-  background: #333;
-  border: 1px solid #444;
-  color: white;
-  border-radius: 4px;
-  box-sizing: border-box;
-  font-size: 16px; 
-}
-
-button {
-  padding: 12px 20px;
-  cursor: pointer;
-  background: #646cff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-weight: bold;
-  font-size: 14px;
-  transition: background 0.2s;
-  white-space: nowrap; 
-}
-
-button:hover { background: #535bf2; }
-button:disabled { background: #666; cursor: not-allowed; opacity: 0.7; }
-button.secondary { background: #444; }
-button.secondary:hover { background: #555; }
-
-.flex { display: flex; gap: 10px; align-items: center; }
-.flex-col { display: flex; flex-direction: column; gap: 10px; }
-.justify-between { justify-content: space-between; }
-.items-center { align-items: center; }
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  gap: 15px;
-}
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0,0,0,0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  padding: 20px; 
-  box-sizing: border-box;
-}
-
-.modal-content {
-  background-color: #fff;
-  padding: 30px;
-  border-radius: 8px;
-  width: 100%;
-  max-width: 400px; 
-  text-align: center;
-  color: #333;
-  box-sizing: border-box;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-}
-
-.drag-area {
-  border: 2px dashed #ccc;
-  border-radius: 8px;
-  padding: 40px 20px;
-  margin: 20px 0;
-  cursor: pointer;
-  background-color: #f9f9f9;
-  transition: all 0.3s;
-  box-sizing: border-box;
-}
-
-.drag-area.active {
-  border-color: #007bff;
-  background-color: #e9f5ff;
-}
-
-.modal-actions {
-  margin-top: 20px;
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.modal-actions button {
-  flex: 1;
-}
-
-@media (max-width: 600px) {
-  
-  .header {
-    flex-direction: column;
-    align-items: stretch; 
+@layer components {
+  .glass-card {
+    @apply bg-dark-card backdrop-blur-lg border border-white/10 rounded-2xl shadow-2xl p-6 md:p-8;
   }
 
-  .header button {
-    width: 100%; 
+  .glass-input {
+    @apply w-full px-4 py-3 bg-black/30 border border-white/10 rounded-xl text-white outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all duration-300 placeholder-gray-500 mb-3;
   }
 
-  .form-row {
-    flex-direction: column;
-    align-items: stretch; 
+  .btn-primary {
+    @apply w-full px-6 py-3 bg-brand hover:bg-brand-light active:bg-brand-dark text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-brand/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2;
   }
 
-  .form-row button {
-    width: 100%;
-  }
-
-  .list-item {
-    flex-direction: column;
-    align-items: flex-start !important; 
-    gap: 15px;
-  }
-
-  .list-item-info {
-    width: 100%;
-    border-bottom: 1px solid #444; 
-    padding-bottom: 10px;
-  }
-
-  .list-item-actions {
-    width: 100%;
-    display: flex;
-    justify-content: space-between; 
-    gap: 10px;
+  .btn-secondary {
+    @apply w-full px-6 py-3 bg-white/5 hover:bg-white/10 text-white font-semibold rounded-xl transition-all duration-300 border border-white/10 flex items-center justify-center gap-2;
   }
   
-  .list-item-actions button {
-    flex: 1; 
-    display: flex;
-    justify-content: center;
+  .btn-danger {
+    @apply w-full px-6 py-3 bg-red-500/80 hover:bg-red-500 text-white font-semibold rounded-xl transition-all duration-300 border border-red-500/20 shadow-lg shadow-red-500/20 flex items-center justify-center gap-2;
   }
 
-  .modal-content {
-    padding: 20px;
-  }
-
-  .drag-area {
-    padding: 30px 10px;
+  .btn-icon {
+    @apply p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors border border-white/10 text-gray-300 hover:text-white flex items-center justify-center;
   }
 }

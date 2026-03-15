@@ -70,7 +70,7 @@ export default function PasswordGenerator() {
             await addPassword({
                 siteName,
                 username,
-                password // A senha gerada no momento
+                password 
             });
 
             mySwal.fire({
@@ -84,7 +84,6 @@ export default function PasswordGenerator() {
                 if (result.isConfirmed) {
                     navigate('/');
                 } else {
-                    // Limpa apenas os campos de salvar para uma próxima senha
                     setSiteName('');
                     setUsername('');
                 }
@@ -101,105 +100,110 @@ export default function PasswordGenerator() {
     };
 
     return (
-        <div className="container">
-            <header className="header">
-                <h1>🛠️ Gerador de Senhas</h1>
-                <button onClick={() => navigate('/')} className="secondary">
-                    ⬅️ Voltar ao Cofre
+        <div className="w-full max-w-3xl mx-auto px-4 py-8 flex flex-col gap-6">
+            <header className="flex justify-between items-center glass-card p-4">
+                <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+                    🛠️ Gerador
+                </h1>
+                <button onClick={() => navigate('/')} className="btn-secondary w-auto py-2 text-sm">
+                    ⬅️ Voltar
                 </button>
             </header>
 
-            <div className="card">
-                <div style={{ marginBottom: '20px' }}>
-                    <div style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: '10px', 
-                        background: '#1a1a1a', 
-                        padding: '15px', 
-                        borderRadius: '8px',
-                        border: '1px solid #333'
-                    }}>
+            <div className="glass-card">
+                <div className="mb-8">
+                    <div className="flex items-center gap-3 bg-black/40 p-4 rounded-xl border border-brand-DEFAULT/30 shadow-inner">
                         <input 
                             type="text" 
                             value={password} 
                             readOnly 
-                            style={{ 
-                                flex: 1, 
-                                fontSize: '1.2em', 
-                                fontFamily: 'monospace',
-                                border: 'none',
-                                background: 'transparent',
-                                color: '#646cff',
-                                fontWeight: 'bold'
-                            }} 
+                            className="flex-1 bg-transparent border-none text-2xl md:text-3xl font-mono text-brand-light font-bold outline-none truncate"
                         />
-                        <button onClick={copyToClipboard} title="Copiar">📋</button>
-                        <button onClick={generatePassword} title="Gerar Nova">🔄</button>
+                        <button onClick={copyToClipboard} className="btn-icon p-3 bg-brand-DEFAULT/10 border-brand-DEFAULT/30 text-brand-light hover:bg-brand-DEFAULT/20" title="Copiar">
+                            📋
+                        </button>
+                        <button onClick={generatePassword} className="btn-icon p-3" title="Gerar Nova">
+                            🔄
+                        </button>
                     </div>
                 </div>
 
-                <div className="settings" style={{ display: 'flex', flexDirection: 'column', gap: '15px', paddingBottom: '20px', borderBottom: '1px solid #333' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <label>Tamanho: <strong>{length}</strong></label>
+                <div className="flex flex-col gap-6 pb-8 border-b border-white/10">
+                    <div className="flex justify-between items-center bg-black/20 p-4 rounded-lg">
+                        <label className="text-gray-300 font-medium">
+                            Tamanho: <strong className="text-brand-light text-lg ml-2">{length}</strong>
+                        </label>
                         <input 
                             type="range" 
                             min="4" 
                             max="50" 
                             value={length} 
                             onChange={(e) => setLength(parseInt(e.target.value))}
-                            style={{ width: '60%' }}
+                            className="w-1/2 accent-brand-DEFAULT"
                         />
                     </div>
 
-                    <div style={{ 
-                        display: 'flex', 
-                        flexWrap: 'wrap', 
-                        justifyContent: 'center', 
-                        gap: '20px',
-                        margin: '10px 0'
-                    }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <input style={{ cursor: 'pointer' }} type="checkbox" id="uppercase" checked={includeUppercase} onChange={(e) => setIncludeUppercase(e.target.checked)} />
-                            <label htmlFor="uppercase" style={{ fontSize: '1em', cursor: 'pointer' }}>Maiúsculas</label>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <input style={{ cursor: 'pointer' }} type="checkbox" id="numbers" checked={includeNumbers} onChange={(e) => setIncludeNumbers(e.target.checked)} />
-                            <label htmlFor="numbers" style={{ fontSize: '1em', cursor: 'pointer' }}>Números</label>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <input style={{ cursor: 'pointer' }} type="checkbox" id="symbols" checked={includeSymbols} onChange={(e) => setIncludeSymbols(e.target.checked)} />
-                            <label htmlFor="symbols" style={{ fontSize: '1em', cursor: 'pointer' }}>Símbolos</label>
-                        </div>
+                    <div className="flex flex-wrap justify-center gap-6 p-4 bg-black/20 rounded-lg">
+                        <label className="flex items-center gap-3 cursor-pointer group">
+                            <input 
+                                type="checkbox" 
+                                checked={includeUppercase} 
+                                onChange={(e) => setIncludeUppercase(e.target.checked)}
+                                className="w-5 h-5 rounded border-gray-600 text-brand-DEFAULT focus:ring-brand-DEFAULT accent-brand-DEFAULT cursor-pointer"
+                            />
+                            <span className="text-gray-300 group-hover:text-white transition-colors">Maiúsculas (A-Z)</span>
+                        </label>
+                        <label className="flex items-center gap-3 cursor-pointer group">
+                            <input 
+                                type="checkbox" 
+                                checked={includeNumbers} 
+                                onChange={(e) => setIncludeNumbers(e.target.checked)}
+                                className="w-5 h-5 rounded border-gray-600 text-brand-DEFAULT focus:ring-brand-DEFAULT accent-brand-DEFAULT cursor-pointer"
+                            />
+                            <span className="text-gray-300 group-hover:text-white transition-colors">Números (0-9)</span>
+                        </label>
+                        <label className="flex items-center gap-3 cursor-pointer group">
+                            <input 
+                                type="checkbox" 
+                                checked={includeSymbols} 
+                                onChange={(e) => setIncludeSymbols(e.target.checked)}
+                                className="w-5 h-5 rounded border-gray-600 text-brand-DEFAULT focus:ring-brand-DEFAULT accent-brand-DEFAULT cursor-pointer"
+                            />
+                            <span className="text-gray-300 group-hover:text-white transition-colors">Símbolos (!@#$)</span>
+                        </label>
                     </div>
                 </div>
 
-                <div style={{ marginTop: '20px' }}>
-                    <h3 style={{ marginBottom: '15px', fontSize: '1.1em' }}>💾 Salvar no Cofre</h3>
-                    <form onSubmit={handleSaveToVault} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div className="mt-8">
+                    <h3 className="text-xl font-semibold mb-4 text-white flex items-center gap-2">
+                        💾 Guardar no Cofre
+                    </h3>
+                    <form onSubmit={handleSaveToVault} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <input 
+                            className="glass-input mb-0"
                             placeholder="Site (ex: Instagram)" 
                             value={siteName} 
                             onChange={e => setSiteName(e.target.value)} 
                         />
                         <input 
+                            className="glass-input mb-0"
                             placeholder="Usuário ou E-mail" 
                             value={username} 
                             onChange={e => setUsername(e.target.value)} 
                         />
                         <button 
                             type="submit" 
-                            style={{ backgroundColor: '#28a745', marginTop: '5px' }}
+                            className="btn-primary md:col-span-2 bg-green-600/80 hover:bg-green-600 shadow-green-500/20"
                             disabled={saving}
                         >
-                            {saving ? 'Salvando...' : 'Guardar Senha Gerada'}
+                            {saving ? 'Salvando...' : 'Guardar Senha Atual'}
                         </button>
                     </form>
                 </div>
             </div>
             
-            <p style={{ textAlign: 'center', color: '#888', fontSize: '0.9em', marginTop: '20px' }}>
-                A senha salva será exatamente a que estiver exibida no topo.
+            <p className="text-center text-gray-500 text-sm">
+                A senha será guardada exatamente como está exibida no painel acima.
             </p>
         </div>
     );
