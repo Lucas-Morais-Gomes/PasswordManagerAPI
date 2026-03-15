@@ -6,8 +6,8 @@ namespace PasswordManagerAPI.Services;
 public class EncryptionService
 {
     private readonly string _globalKey;
-    private const int Iterations = 100_000; // PBKDF2 cost factor
-    private const int KeySize = 32; // 256 bits
+    private const int Iterations = 100_000;
+    private const int KeySize = 32;
 
     public EncryptionService(IConfiguration config)
     {
@@ -19,7 +19,6 @@ public class EncryptionService
     /// </summary>
     private byte[] DeriveKey(string userSalt)
     {
-        // PBKDF2 (Rfc2898DeriveBytes) é o padrão da indústria para derivação de chaves
         using var pbkdf2 = new Rfc2898DeriveBytes(_globalKey, Encoding.UTF8.GetBytes(userSalt), Iterations, HashAlgorithmName.SHA256);
         return pbkdf2.GetBytes(KeySize);
     }

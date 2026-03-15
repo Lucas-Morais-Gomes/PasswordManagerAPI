@@ -3,7 +3,6 @@ import PasswordGenerator from './PasswordGenerator';
 import { BrowserRouter } from 'react-router-dom';
 import { VaultContext } from '../context/VaultContext';
 
-// Mock do Contexto
 const mockAddPassword = vi.fn();
 const mockVaultContext = {
     passwords: [],
@@ -24,10 +23,9 @@ describe('PasswordGenerator Page', () => {
         </VaultContext.Provider>
     );
 
-    // Função auxiliar para pegar o input da senha (o único que é readOnly no topo)
     const getPasswordInput = () => {
         const inputs = screen.getAllByRole('textbox') as HTMLInputElement[];
-        // O input da senha é o primeiro e tem um estilo específico ou é readonly
+    
         return inputs.find(i => i.readOnly) as HTMLInputElement;
     };
 
@@ -60,7 +58,7 @@ describe('PasswordGenerator Page', () => {
         const saveBtn = screen.getByText('Guardar Senha Atual');
         
         fireEvent.click(saveBtn);
-        // O mockAddPassword não deve ser chamado se os campos estiverem vazios
+    
         expect(mockAddPassword).not.toHaveBeenCalled();
     });
 });

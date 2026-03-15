@@ -12,15 +12,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.WebHost.UseUrls($"http://*:{Environment.GetEnvironmentVariable("PORT") ?? "8080"}");
 
-// 1. Banco de Dados
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// 2. Serviços Customizados
 builder.Services.AddScoped<EncryptionService>();
 builder.Services.AddScoped<TokenService>();
 
-// 3. Rate Limiting (Proteção contra Brute Force)
 builder.Services.AddRateLimiter(options =>
 {
     options.AddPolicy("LoginPolicy", httpContext =>
@@ -28,15 +25,14 @@ builder.Services.AddRateLimiter(options =>
             partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? httpContext.Request.Headers.Host.ToString(),
             factory: _ => new FixedWindowRateLimiterOptions
             {
-                PermitLimit = 5, // Máximo de 5 tentativas
-                Window = TimeSpan.FromMinutes(1), // Por minuto
+                PermitLimit = 5,
+                Window = TimeSpan.FromMinutes(1),
                 QueueLimit = 0
             }));
 
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 });
 
-// 4. Autenticação JWT
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -49,7 +45,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// 4. CORS (Permitir Frontend)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend",
@@ -62,14 +57,12 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// 5. Migrations Automáticas (Opcional, mas útil para Docker)
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
 }
 
-// Pipeline HTTP
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -78,14 +71,14 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowFrontend");
 
-app.UseRateLimiter(); // Ativa a proteção de taxa de requisições
+app.UseRateLimiter();
 
 app.UseCors(builder => builder
     .AllowAnyOrigin()
     .AllowAnyMethod()
     .AllowAnyHeader());
 
-app.UseAuthentication(); // Importante: Antes de Authorization
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
