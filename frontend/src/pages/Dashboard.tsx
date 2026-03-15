@@ -110,7 +110,7 @@ export default function Dashboard() {
             setNewItem({ 
                 siteName: item.siteName, 
                 username: item.username, 
-                password: realPassword 
+                password: realPassword
             });
             
             setEditingId(id);
@@ -127,6 +127,15 @@ export default function Dashboard() {
     const cancelarEdicao = () => {
         setEditingId(null);
         setNewItem({ siteName: '', username: '', password: '' });
+    };
+
+    const formatUrl = (url: string) => {
+        if (!url) return '';
+       
+        if (url.startsWith('http://') || url.startsWith('https://')) return url;
+       
+        if (url.includes('.')) return `https://${url}`;
+        return '';
     };
 
     const salvarSenha = async (e: React.FormEvent) => {
@@ -207,7 +216,7 @@ export default function Dashboard() {
                 await deleteAllPasswords();
                 mySwal.fire('Sucesso!', 'Cofre esvaziado.', 'success');
             } catch (error: any) {
-                mySwal.fire('Erro!', 'Erro ao deletar tudo.', 'error');
+                mySwal.fire('Erro!', error.response?.data || 'Erro ao deletar tudo.', 'error');
             }
         }
     };
@@ -220,17 +229,14 @@ export default function Dashboard() {
         <div className="w-full max-w-6xl mx-auto px-4 py-8 flex flex-col gap-8">
             <header className="flex flex-col md:flex-row justify-between items-center gap-6 glass-card p-6">
                 <div className="flex items-center gap-4">
-                    <h1>
-                        <span className="text-3xl">🔐</span>
-                    </h1>
                     <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-brand-light to-white">
-                        Meu Cofre
+                        🔐 Meu Cofre
                     </h1>
                 </div>
                 
                 <div className="flex flex-wrap items-center justify-center gap-3">
                     <button onClick={() => navigate('/generator')} className="btn-primary py-2 px-4 text-sm w-auto">
-                        🛠️ Gerar Senha
+                        🛠️ Gerador de Senha
                     </button>
                     <button onClick={() => setIsModalOpen(true)} className="btn-secondary py-2 px-4 text-sm w-auto">
                         📁 Importar CSV
@@ -255,7 +261,7 @@ export default function Dashboard() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <input 
                             className="glass-input mb-0"
-                            placeholder="Site (ex: Netflix)" 
+                            placeholder="Site ou URL (ex: netflix.com)" 
                             value={newItem.siteName} 
                             onChange={e => setNewItem({ ...newItem, siteName: e.target.value })} 
                             required 
@@ -310,26 +316,41 @@ export default function Dashboard() {
                         Carregando senhas seguramente...
                     </div>
                 ) : senhasFiltradas.length > 0 ? (
-                    senhasFiltradas.map(item => (
-                        <div key={item.id} className="glass-card p-5 flex flex-col justify-between group hover:border-brand-DEFAULT/40 transition-colors">
-                            <div className="mb-4">
-                                <strong className="text-lg text-white block mb-1 truncate" title={item.siteName}>{item.siteName}</strong>
-                                <div className="text-gray-400 text-sm truncate" title={item.username}>{item.username}</div>
-                            </div>
+                    senhasFiltradas.map(item => {
+                        const destinationUrl = formatUrl(item.siteName);
+                        return (
+                            <div key={item.id} className="glass-card p-5 flex flex-col justify-between group hover:border-brand-DEFAULT/40 transition-colors">
+                                <div className="mb-4">
+                                    {destinationUrl ? (
+                                        <a 
+                                            href={destinationUrl} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="text-lg text-white font-bold block mb-1 truncate hover:text-brand-light transition-colors flex items-center gap-2"
+                                            title={`Ir para ${item.siteName}`}
+                                        >
+                                            {item.siteName} <span className="text-xs opacity-50">🔗</span>
+                                        </a>
+                                    ) : (
+                                        <strong className="text-lg text-white block mb-1 truncate" title={item.siteName}>{item.siteName}</strong>
+                                    )}
+                                    <div className="text-gray-400 text-sm truncate" title={item.username}>{item.username}</div>
+                                </div>
 
-                            <div className="flex justify-end gap-2 pt-4 border-t border-white/5">
-                                <button onClick={() => revelarSenha(item.id)} className="btn-icon text-blue-400 hover:bg-blue-500/20 hover:border-blue-500/30" title="Ver Senha">
-                                    👁️
-                                </button>
-                                <button onClick={() => iniciarEdicao(item.id)} className="btn-icon text-yellow-400 hover:bg-yellow-500/20 hover:border-yellow-500/30" title="Editar">
-                                    ✏️
-                                </button>
-                                <button onClick={() => deletarSenhaClick(item.id)} className="btn-icon text-red-400 hover:bg-red-500/20 hover:border-red-500/30" title="Excluir">
-                                    🗑️
-                                </button>
+                                <div className="flex justify-end gap-2 pt-4 border-t border-white/5">
+                                    <button onClick={() => revelarSenha(item.id)} className="btn-icon text-blue-400 hover:bg-blue-500/20 hover:border-blue-500/30" title="Ver Senha">
+                                        👁️
+                                    </button>
+                                    <button onClick={() => iniciarEdicao(item.id)} className="btn-icon text-yellow-400 hover:bg-yellow-500/20 hover:border-yellow-500/30" title="Editar">
+                                        ✏️
+                                    </button>
+                                    <button onClick={() => deletarSenhaClick(item.id)} className="btn-icon text-red-400 hover:bg-red-500/20 hover:border-red-500/30" title="Excluir">
+                                        🗑️
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    ))
+                        );
+                    })
                 ) : (
                     <div className="col-span-full glass-card py-12 text-center text-gray-400 flex flex-col items-center justify-center">
                         <span className="text-4xl mb-3 opacity-50">📭</span>

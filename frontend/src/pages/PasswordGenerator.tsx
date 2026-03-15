@@ -7,14 +7,12 @@ export default function PasswordGenerator() {
     const navigate = useNavigate();
     const { addPassword } = useContext(VaultContext);
     
-    // Estados do Gerador
     const [password, setPassword] = useState('');
     const [length, setLength] = useState(16);
     const [includeUppercase, setIncludeUppercase] = useState(true);
     const [includeNumbers, setIncludeNumbers] = useState(true);
     const [includeSymbols, setIncludeSymbols] = useState(true);
 
-    // Estados para salvar no cofre
     const [siteName, setSiteName] = useState('');
     const [username, setUsername] = useState('');
     const [saving, setSaving] = useState(false);
@@ -181,7 +179,7 @@ export default function PasswordGenerator() {
                     <form onSubmit={handleSaveToVault} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <input 
                             className="glass-input mb-0"
-                            placeholder="Site (ex: Instagram)" 
+                            placeholder="Site ou URL (ex: netflix.com)" 
                             value={siteName} 
                             onChange={e => setSiteName(e.target.value)} 
                         />

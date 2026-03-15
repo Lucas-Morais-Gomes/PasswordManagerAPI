@@ -27,7 +27,6 @@ export function VaultProvider({ children }: { children: ReactNode }) {
     const { isAuthenticated, logout } = useContext(AuthContext);
 
     const fetchPasswords = async (force = false) => {
-        // Se já inicializou e não for um "force refresh", não faz a requisição
         if (initialized && !force) return;
 
         setLoading(true);
@@ -45,7 +44,6 @@ export function VaultProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    // Limpar o estado ao fazer logout
     useEffect(() => {
         if (!isAuthenticated) {
             setPasswords([]);
@@ -55,8 +53,6 @@ export function VaultProvider({ children }: { children: ReactNode }) {
 
     const addPassword = async (item: any) => {
         const response = await api.post('/vault', item);
-        // Atualiza o estado local sem precisar de um novo GET total (opcional, mas eficiente)
-        // Aqui vamos apenas forçar o refresh para garantir consistência com o ID gerado pelo banco
         await fetchPasswords(true);
     };
 
