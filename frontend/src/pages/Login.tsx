@@ -24,8 +24,9 @@ export default function Login() {
     return (
         <div className="w-full max-w-md mt-20 px-4">
             <div className="text-center mb-8">
+                <div className="text-5xl mb-4 grayscale-0 block">🔐</div>
                 <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-brand-light to-brand-DEFAULT mb-2">
-                    🔐 Cofre
+                    Cofre
                 </h1>
                 <p className="text-gray-400">Acesse suas senhas com segurança</p>
             </div>

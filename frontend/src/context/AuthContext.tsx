@@ -1,4 +1,4 @@
-import { createContext, useState } from 'react'; // Removi o useEffect pois não precisamos mais dele aqui
+import { createContext, useState } from 'react';
 import type { ReactNode } from 'react'; 
 
 interface AuthContextType {

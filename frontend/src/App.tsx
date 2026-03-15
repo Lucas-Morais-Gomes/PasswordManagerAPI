@@ -8,7 +8,6 @@ import Dashboard from './pages/Dashboard';
 import PasswordGenerator from './pages/PasswordGenerator';
 import './App.css';
 
-// Componente para proteger rotas privadas
 function PrivateRoute({ children }: { children: JSX.Element }) {
     const { isAuthenticated } = useContext(AuthContext);
     return isAuthenticated ? children : <Navigate to="/login" />;
