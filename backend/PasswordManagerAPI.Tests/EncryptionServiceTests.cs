@@ -9,6 +9,7 @@ public class EncryptionServiceTests
 {
     private readonly EncryptionService _encryptionService;
     private const string TestKey = "12345678901234567890123456789012";
+    private const string TestUserSalt = "usuario-teste-salt-123";
 
     public EncryptionServiceTests()
     {
@@ -30,8 +31,8 @@ public class EncryptionServiceTests
     public void Encrypt_ShouldReturnCipherText_ThatCanBeDecrypted(string plainText)
     {
         // Act
-        var encrypted = _encryptionService.Encrypt(plainText);
-        var decrypted = _encryptionService.Decrypt(encrypted);
+        var encrypted = _encryptionService.Encrypt(plainText, TestUserSalt);
+        var decrypted = _encryptionService.Decrypt(encrypted, TestUserSalt);
 
         // Assert
         decrypted.Should().Be(plainText);
@@ -45,27 +46,37 @@ public class EncryptionServiceTests
         var plainText = "MesmaSenha";
 
         // Act
-        var encrypted1 = _encryptionService.Encrypt(plainText);
-        var encrypted2 = _encryptionService.Encrypt(plainText);
+        var encrypted1 = _encryptionService.Encrypt(plainText, TestUserSalt);
+        var encrypted2 = _encryptionService.Encrypt(plainText, TestUserSalt);
 
         // Assert
         encrypted1.Should().NotBe(encrypted2, "Cada encriptação deve usar um IV aleatório diferente.");
     }
 
     [Fact]
-    public void Decrypt_WithWrongKey_ShouldFail()
+    public void Encrypt_ShouldProduceDifferentCipherTexts_ForDifferentUserSalts()
+    {
+        // Arrange
+        var plainText = "SenhaComum";
+        var salt1 = "salt-usuario-1";
+        var salt2 = "salt-usuario-2";
+
+        // Act
+        var encrypted1 = _encryptionService.Encrypt(plainText, salt1);
+        var encrypted2 = _encryptionService.Encrypt(plainText, salt2);
+
+        // Assert
+        encrypted1.Should().NotBe(encrypted2, "Usuarios diferentes com a mesma senha devem ter ciphertexts diferentes devido ao salt.");
+    }
+
+    [Fact]
+    public void Decrypt_WithWrongSalt_ShouldFail()
     {
         // Arrange
         var plainText = "DadosSensiveis";
-        var encrypted = _encryptionService.Encrypt(plainText);
-
-        var wrongKeySettings = new Dictionary<string, string?> {
-            {"EncryptionSettings:Key", "outra-chave-qualquer-32-chars-long"},
-        };
-        var wrongConfig = new ConfigurationBuilder().AddInMemoryCollection(wrongKeySettings).Build();
-        var serviceWithWrongKey = new EncryptionService(wrongConfig);
+        var encrypted = _encryptionService.Encrypt(plainText, "salt-correto");
 
         // Act & Assert
-        Assert.ThrowsAny<System.Exception>(() => serviceWithWrongKey.Decrypt(encrypted));
+        Assert.ThrowsAny<System.Exception>(() => _encryptionService.Decrypt(encrypted, "salt-errado"));
     }
 }

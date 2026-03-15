@@ -5,6 +5,9 @@ using Microsoft.IdentityModel.Tokens;
 using PasswordManagerAPI.Data;
 using PasswordManagerAPI.Services;
 
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.WebHost.UseUrls($"http://*:{Environment.GetEnvironmentVariable("PORT") ?? "8080"}");
@@ -17,7 +20,23 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<EncryptionService>();
 builder.Services.AddScoped<TokenService>();
 
-// 3. Autenticação JWT
+// 3. Rate Limiting (Proteção contra Brute Force)
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy("LoginPolicy", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? httpContext.Request.Headers.Host.ToString(),
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5, // Máximo de 5 tentativas
+                Window = TimeSpan.FromMinutes(1), // Por minuto
+                QueueLimit = 0
+            }));
+
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
+
+// 4. Autenticação JWT
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -58,6 +77,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowFrontend");
+
+app.UseRateLimiter(); // Ativa a proteção de taxa de requisições
 
 app.UseCors(builder => builder
     .AllowAnyOrigin()

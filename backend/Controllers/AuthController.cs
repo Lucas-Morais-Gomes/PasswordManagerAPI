@@ -1,5 +1,6 @@
 using BCrypt.Net;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using PasswordManagerAPI.Data;
 using PasswordManagerAPI.Dtos;
@@ -10,6 +11,7 @@ namespace PasswordManagerAPI.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[EnableRateLimiting("LoginPolicy")]
 public class AuthController : ControllerBase
 {
     private readonly AppDbContext _context;
@@ -27,10 +29,16 @@ public class AuthController : ControllerBase
         if (await _context.Users.AnyAsync(u => u.Email == request.Email))
             return BadRequest("Email ou senha já estão em uso.");
 
-        // Hash da Senha Mestra (BCrypt)
         string passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
-        var user = new User { Email = request.Email, PasswordHash = passwordHash };
+        string encryptionSalt = Guid.NewGuid().ToString();
+
+        var user = new User 
+        { 
+            Email = request.Email, 
+            PasswordHash = passwordHash,
+            EncryptionSalt = encryptionSalt
+        };
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 

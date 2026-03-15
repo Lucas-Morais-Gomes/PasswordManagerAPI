@@ -25,6 +25,13 @@ public class VaultController : ControllerBase
 
     private int GetUserId() => int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
+    private async Task<string> GetUserSalt()
+    {
+        var userId = GetUserId();
+        var user = await _context.Users.FindAsync(userId);
+        return user?.EncryptionSalt ?? throw new UnauthorizedAccessException("Usuário inválido ou salt ausente.");
+    }
+
     [HttpGet]
     public async Task<ActionResult<List<VaultItemResponseDto>>> GetMyPasswords()
     {
@@ -40,7 +47,8 @@ public class VaultController : ControllerBase
     [HttpPost]
     public async Task<ActionResult> AddPassword(CreateVaultItemDto request)
     {
-        var encryptedPassword = _encryptionService.Encrypt(request.Password);
+        var salt = await GetUserSalt();
+        var encryptedPassword = _encryptionService.Encrypt(request.Password, salt);
 
         var newItem = new VaultItem
         {
@@ -64,7 +72,8 @@ public class VaultController : ControllerBase
 
         if (item == null) return NotFound("Item não encontrado ou acesso negado.");
 
-        var plainPassword = _encryptionService.Decrypt(item.EncryptedPassword);
+        var salt = await GetUserSalt();
+        var plainPassword = _encryptionService.Decrypt(item.EncryptedPassword, salt);
         return Ok(new DecryptedPasswordDto(plainPassword));
     }
     
@@ -109,7 +118,8 @@ public class VaultController : ControllerBase
         item.SiteName = request.SiteName;
         item.Username = request.Username;
         
-        item.EncryptedPassword = _encryptionService.Encrypt(request.Password);
+        var salt = await GetUserSalt();
+        item.EncryptedPassword = _encryptionService.Encrypt(request.Password, salt);
 
         await _context.SaveChangesAsync();
 
@@ -126,6 +136,7 @@ public class VaultController : ControllerBase
             return BadRequest("O arquivo deve ser um formato .csv válido.");
 
         var userId = GetUserId();
+        var salt = await GetUserSalt();
         int importedCount = 0;
 
         using (var stream = new StreamReader(file.OpenReadStream()))
@@ -159,7 +170,7 @@ public class VaultController : ControllerBase
                 if (string.IsNullOrWhiteSpace(siteName) || string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(username)) 
                     continue;
 
-                var encryptedPassword = _encryptionService.Encrypt(password);
+                var encryptedPassword = _encryptionService.Encrypt(password, salt);
 
                 var newItem = new VaultItem
                 {
